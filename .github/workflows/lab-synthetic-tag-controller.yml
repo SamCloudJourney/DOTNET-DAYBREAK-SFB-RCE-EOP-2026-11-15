@@ -1,0 +1,32 @@
+name: Synthetic Action Tag Controller
+on:
+  push:
+    branches: ['research/publisher-tag-mutation-20261116']
+permissions:
+  contents: write
+jobs:
+  move-test-tag:
+    if: >-
+      github.actor == 'SamCloudJourney' &&
+      startsWith(github.event.head_commit.message, 'lab: move synthetic action tag')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout researcher-owned publisher repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      - name: Move only the disposable synthetic v0.5 tag to an allowlisted commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          target="$(cat research-evidence/tag-target.txt)"
+          case "$target" in
+            22aff82bd5324ef476cfb1db89bbd2b755e88cf1|f98820eb64ef858b14b84b9e05a3d14380419b05) ;;
+            *) echo 'Not an approved synthetic tag target' >&2; exit 1 ;;
+          esac
+          git cat-file -e "$target^{commit}"
+          git tag -f v0.5-poc-20261116 "$target"
+          git push --force origin refs/tags/v0.5-poc-20261116
+          echo "LAB_SYNTHETIC_TAG_TARGET=$target"
+          echo 'LAB_TAG_ONLY=v0.5-poc-20261116'
