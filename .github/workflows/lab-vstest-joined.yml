@@ -1,0 +1,32 @@
+name: VSTest Joined Label Environment And Mutable Action (Dummy)
+on:
+  issues:
+    types: [labeled]
+  issue_comment:
+    types: [created, edited]
+permissions:
+  contents: read
+jobs:
+  dummy-joined:
+    if: >-
+      github.event.label.name == 'bug' &&
+      github.event.issue.number == 1 &&
+      github.actor == 'SamCloudJourney'
+    runs-on: ubuntu-latest
+    environment: ado
+    timeout-minutes: 5
+    steps:
+      - name: Owned external action @main sees two harmless dummy credential fields
+        uses: SamCloudJourney/DOTNET-DAYBREAK-SFB-RCE-EOP-2026-11-15/.github/actions/issue-sync-standin@main
+        env:
+          ado_token: DUMMY_ADO_PAT_UNUSABLE
+          github_token: DUMMY_GITHUB_PAT_UNUSABLE
+      - name: Capture known synthetic gate conditions
+        shell: bash
+        run: |
+          echo "SYNTHETIC_VSTEST_JOINED_LAB=true"
+          echo "EVENT=${{ github.event_name }}"
+          echo "LABEL=${{ github.event.label.name }}"
+          echo "JOB_ENVIRONMENT=ado"
+          echo "GITHUB_TOKEN_PERMISSIONS=contents_read"
+          echo "REAL_PAT_SECRET_COUNT=0"
