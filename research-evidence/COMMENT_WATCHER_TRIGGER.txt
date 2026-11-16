@@ -1,0 +1,1 @@
+Safe GITHUB_TOKEN issue_comment downstream-trigger suppression test. No secrets.
