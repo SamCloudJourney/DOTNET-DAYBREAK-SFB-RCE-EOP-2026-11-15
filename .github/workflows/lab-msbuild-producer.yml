@@ -26,3 +26,5 @@ jobs:
           name: lab-msbuild-results
           path: sv-results
           retention-days: 1
+
+# Harmless PR change to activate the lab's source-fidelity proof.
