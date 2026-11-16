@@ -1,0 +1,24 @@
+name: LAB Bot Comment Event Suppression Probe
+on:
+  push:
+    branches: [research/bot-comment-suppression-20261116]
+permissions:
+  issues: write
+  contents: read
+jobs:
+  send-lab-comment:
+    if: github.repository == 'SamCloudJourney/DOTNET-DAYBREAK-SFB-RCE-EOP-2026-11-15'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Post one harmless test comment with workflow GITHUB_TOKEN
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const result = await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 2,
+              body: '**LAB ONLY:** This comment was posted via a job-scoped GITHUB_TOKEN to test GitHub issue_comment event suppression. It is not a security alert or validator output.'
+            });
+            console.log('LAB_BOT_COMMENT_CREATED_ID='+result.data.id);
