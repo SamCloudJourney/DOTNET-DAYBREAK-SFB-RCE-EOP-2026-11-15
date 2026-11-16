@@ -1,0 +1,29 @@
+name: VSTest issue-label credential-boundary stand-in
+on:
+  issues:
+    types: [labeled]
+  issue_comment:
+    types: [created, edited]
+permissions:
+  contents: read
+jobs:
+  synthetic-issue-sync:
+    if: github.event.label.name == 'bug'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout only local dummy action
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Invoke harmless local composite action
+        uses: ./.github/actions/issue-sync-standin
+        env:
+          ado_token: DUMMY_ADO_PAT_UNUSABLE
+          github_token: DUMMY_GITHUB_PAT_UNUSABLE
+      - name: Record event trust gates
+        run: |
+          echo "EVENT_NAME=${{ github.event_name }}"
+          echo "LABEL_NAME=${{ github.event.label.name }}"
+          echo 'MUTABLE_EXTERNAL_ACTION_EXECUTED=false'
+          echo 'GITHUB_TOKEN_PERMISSION=contents:read'
