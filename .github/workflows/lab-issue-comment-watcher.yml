@@ -1,0 +1,23 @@
+name: LAB Issue Comment Downstream Watcher
+on:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+jobs:
+  log-issue-two:
+    if: >-
+      github.repository == 'SamCloudJourney/DOTNET-DAYBREAK-SFB-RCE-EOP-2026-11-15' &&
+      github.event.issue.number == 2
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Record issue-comment event, no API mutation
+        shell: bash
+        env:
+          EVENT_ACTOR: ${{ github.actor }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          echo "ISSUE_COMMENT_LAB_WATCHER_TRIGGERED=true"
+          echo "EVENT_ACTOR=$EVENT_ACTOR"
+          echo "COMMENT_ID=$COMMENT_ID"
