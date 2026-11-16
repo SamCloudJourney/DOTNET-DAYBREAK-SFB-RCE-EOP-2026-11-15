@@ -1,0 +1,28 @@
+name: LAB MSBuild Artifact Producer
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/lab-msbuild-producer.yml'
+permissions:
+  contents: read
+jobs:
+  synthesize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Write synthetic validation output
+        shell: bash
+        run: |
+          mkdir -p sv-results
+          printf '2\n' > sv-results/pr-number.txt
+          printf '1\n' > sv-results/total.txt
+          printf '0\n' > sv-results/exit-code.txt
+          printf '1\n' > sv-results/skill-count.txt
+          printf '0\n' > sv-results/agent-count.txt
+          printf 'LAB_ONLY: harmless validator output from a PR.\n' > sv-results/sv-output.txt
+      - name: Upload controlled artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: lab-msbuild-results
+          path: sv-results
+          retention-days: 1
