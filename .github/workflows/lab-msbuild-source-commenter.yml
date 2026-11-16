@@ -1,0 +1,60 @@
+name: LAB MSBuild Source-Faithful Issue Commenter
+on:
+  workflow_run:
+    workflows: ['LAB MSBuild Artifact Producer']
+    types: [completed]
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: write
+jobs:
+  allowlisted-fixture:
+    if: >-
+      github.repository == 'SamCloudJourney/DOTNET-DAYBREAK-SFB-RCE-EOP-2026-11-15' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'research/msbuild-issue-routing-20261116'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout trusted default branch only
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Download only triggering run artifact
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: lab-msbuild-results
+          run-id: \${{ github.event.workflow_run.id }}
+          github-token: \${{ github.token }}
+      - name: Execute unchanged MSBuild comment handler with issue #2 allowlist
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const fs = require('fs');
+            const run = context.payload.workflow_run;
+            const actual = Number(run.pull_requests?.[0]?.number);
+            const target = parseInt(fs.readFileSync('pr-number.txt','utf8'),10);
+            if (run.head_repository?.full_name !== context.repo.owner+'/'+context.repo.repo) throw Error('source repository disallowed');
+            if (!Number.isSafeInteger(actual) || actual <= 2 || target !== 2 || actual === target) throw Error('unexpected fixture or PR');
+            const upstream = fs.readFileSync('tests/UPSTREAM-MSBUILD-COMMENT-SOURCE.js','utf8');
+            const guarded = {rest:{issues:{
+              listComments: async args => {
+                if (args.issue_number !== 2) throw Error('list scope denied');
+                return github.rest.issues.listComments(args);
+              },
+              updateComment: async () => { throw Error('comment updates forbidden in this test'); },
+              createComment: async args => {
+                if (args.issue_number !== 2) throw Error('write scope denied');
+                if (!args.body?.includes('LAB_ONLY: harmless validator output')) throw Error('unexpected comment contents');
+                args.body = '**LAB ONLY – SOURCE-FAITHFUL CONTROLLED CI TEST; NOT A REAL VALIDATOR RESULT**\n\n' + args.body;
+                const response = await github.rest.issues.createComment(args);
+                console.log('LAB_MSBUILD_SOURCE_REAL_ISSUE_COMMENT_ID='+response.data.id);
+                return response;
+              }
+            }}};
+            const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
+            await new AsyncFunction('require','github','context','console',upstream)(require,guarded,context,console);
+            console.log('LAB_MSBUILD_TRIGGER_PR='+actual+' DEST_ISSUE=2');
