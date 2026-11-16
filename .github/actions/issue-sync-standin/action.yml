@@ -1,0 +1,17 @@
+name: 'Synthetic issue-to-work-item action stand-in'
+description: 'Offline test: records access to dummy credential variables without making network requests'
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        HANDOFF_GITHUB: ${{ env.github_token }}
+        HANDOFF_ADO: ${{ env.ado_token }}
+      run: |
+        if [[ "$HANDOFF_GITHUB" != 'DUMMY_GITHUB_PAT_UNUSABLE' || "$HANDOFF_ADO" != 'DUMMY_ADO_PAT_UNUSABLE' ]]; then
+          echo 'SYNTHETIC_TOKEN_HANDOFF_FAILURE'
+          exit 1
+        fi
+        echo 'SYNTHETIC_TOKEN_HANDOFF_BOTH_READABLE=true'
+        echo 'ACTUAL_CREDENTIALS_USED=false'
+        echo 'EXTERNAL_NETWORK_REQUESTS=false'
