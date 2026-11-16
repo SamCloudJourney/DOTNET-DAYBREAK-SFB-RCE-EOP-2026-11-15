@@ -13,6 +13,6 @@ runs:
           exit 1
         fi
         echo 'SYNTHETIC_TOKEN_HANDOFF_BOTH_READABLE=true'
-        echo 'PUBLISHER_CODE_VERSION=B'
+        echo 'PUBLISHER_CODE_VERSION=C'
         echo 'ACTUAL_CREDENTIALS_USED=false'
         echo 'EXTERNAL_NETWORK_REQUESTS=false'
