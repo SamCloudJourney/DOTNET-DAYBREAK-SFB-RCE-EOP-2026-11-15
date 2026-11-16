@@ -9,7 +9,7 @@ permissions:
 jobs:
   dummy-joined:
     if: >-
-      github.event.label.name == 'bug' &&
+      github.event.label.name == 'sprint' &&
       github.event.issue.number == 1 &&
       github.actor == 'SamCloudJourney'
     runs-on: ubuntu-latest
